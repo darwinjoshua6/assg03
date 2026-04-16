@@ -78,6 +78,8 @@ void tinu16();
 void toutu16();
 void trap(uint16_t i);
 void ld_img(char* fname, uint16_t offset);
+uint16_t mem_read(uint16_t address);
+void mem_write(uint16_t address, uint16_t value);
 
 #ifdef TEST
 } // end extern C for C++ test runner
