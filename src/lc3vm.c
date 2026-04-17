@@ -90,21 +90,21 @@ void mem_write(uint16_t address, uint16_t value)
  */
 uint16_t sign_extend(uint16_t bits, int size)
 {
-    // mask to get the sign bit
-    uint16_t sign_bit = (bits >> (size - 1)) & 1;
+  // mask to get the sign bit
+  uint16_t sign_bit = (bits >> (size - 1)) & 1;
 
-    if (sign_bit == 1)
-    {
-        // extend with 1s
-        bits |= (0xFFFF << size);
-    }
-    else
-    {
-        // ensure upper bits are cleared
-        bits &= ~(0xFFFF << size);
-    }
+  if (sign_bit == 1)
+  {
+    // extend with 1s
+    bits |= (0xFFFF << size);
+  }
+  else
+  {
+    // ensure upper bits are cleared
+    bits &= ~(0xFFFF << size);
+  }
 
-    return bits;
+  return bits;
 }
 
 /** @brief update condition register flags
@@ -122,20 +122,20 @@ uint16_t sign_extend(uint16_t bits, int size)
  */
 void update_flags(enum registr r)
 {
-    uint16_t val = reg[r];
+  uint16_t val = reg[r];
 
-    if (val == 0)
-    {
-        reg[RCND] = FZ;
-    }
-    else if ((val >> 15) & 1)
-    {
-        reg[RCND] = FN;
-    }
-    else
-    {
-        reg[RCND] = FP;
-    }
+  if (val == 0)
+  {
+    reg[RCND] = FZ;
+  }
+  else if ((val >> 15) & 1)
+  {
+    reg[RCND] = FN;
+  }
+  else
+  {
+    reg[RCND] = FP;
+  }
 }
 
 /** @brief add operation
@@ -165,24 +165,24 @@ void update_flags(enum registr r)
  */
 void add(uint16_t i)
 {
-    uint16_t dr = DR(i);
-    uint16_t sr1 = SR1(i);
+  uint16_t dr = DR(i);
+  uint16_t sr1 = SR1(i);
 
-    uint16_t result;
+  uint16_t result;
 
-    if (FIMM(i))
-    {
-        uint16_t imm = SEXTIMM(i);
-        result = reg[sr1] + imm;
-    }
-    else
-    {
-        uint16_t sr2 = SR2(i);
-        result = reg[sr1] + reg[sr2];
-    }
+  if (FIMM(i))
+  {
+    uint16_t imm = SEXTIMM(i);
+    result = reg[sr1] + imm;
+  }
+  else
+  {
+    uint16_t sr2 = SR2(i);
+    result = reg[sr1] + reg[sr2];
+  }
 
-    reg[dr] = result;
-    update_flags(dr);
+  reg[dr] = result;
+  update_flags(dr);
 }
 
 /** @brief logical AND operation
@@ -206,24 +206,24 @@ void add(uint16_t i)
  */
 void andlc(uint16_t i)
 {
-    uint16_t dr = DR(i);
-    uint16_t sr1 = SR1(i);
+  uint16_t dr = DR(i);
+  uint16_t sr1 = SR1(i);
 
-    uint16_t result;
+  uint16_t result;
 
-    if (FIMM(i))
-    {
-        uint16_t imm = SEXTIMM(i);
-        result = reg[sr1] & imm;
-    }
-    else
-    {
-        uint16_t sr2 = SR2(i);
-        result = reg[sr1] & reg[sr2];
-    }
+  if (FIMM(i))
+  {
+    uint16_t imm = SEXTIMM(i);
+    result = reg[sr1] & imm;
+  }
+  else
+  {
+    uint16_t sr2 = SR2(i);
+    result = reg[sr1] & reg[sr2];
+  }
 
-    reg[dr] = result;
-    update_flags(dr);
+  reg[dr] = result;
+  update_flags(dr);
 }
 
 /** @brief logical NOT operation
@@ -240,11 +240,11 @@ void andlc(uint16_t i)
  */
 void notlc(uint16_t i)
 {
-    uint16_t dr = DR(i);
-    uint16_t sr = SR1(i);
+  uint16_t dr = DR(i);
+  uint16_t sr = SR1(i);
 
-    reg[dr] = ~reg[sr];
-    update_flags(dr);
+  reg[dr] = ~reg[sr];
+  update_flags(dr);
 }
 
 /** @brief load RPC + offset
@@ -263,7 +263,16 @@ void notlc(uint16_t i)
  *   destination and source register operands, and to extract the
  *   second source register or the immediate value encoded in the
  */
-// put your implememtation of ld() here below it documentation
+void ld(uint16_t i)
+{
+  uint16_t dr = DR(i);
+  uint16_t offset = PCOFF9(i);
+
+  uint16_t address = reg[RPC] + offset;
+  reg[dr] = mem_read(address);
+
+  update_flags(dr);
+}
 
 /** @brief load indirect
  *
@@ -280,7 +289,18 @@ void notlc(uint16_t i)
  *   destination and source register operands, and to extract the
  *   second source register or the immediate value encoded in the
  */
-// put your implememtation of ldi() here below it documentation
+void ldi(uint16_t i)
+{
+  uint16_t dr = DR(i);
+  uint16_t offset = PCOFF9(i);
+
+  uint16_t address = reg[RPC] + offset;
+  uint16_t indirect = mem_read(address);
+
+  reg[dr] = mem_read(indirect);
+
+  update_flags(dr);
+}
 
 /** @brief load base + relative offset
  *
@@ -296,7 +316,17 @@ void notlc(uint16_t i)
  *   destination and source register operands, and to extract the
  *   second source register or the immediate value encoded in the
  */
-// put your implememtation of ldr() here below it documentation
+void ldr(uint16_t i)
+{
+  uint16_t dr = DR(i);
+  uint16_t base = SR1(i);
+  uint16_t offset = OFF6(i);
+
+  uint16_t address = reg[base] + offset;
+  reg[dr] = mem_read(address);
+
+  update_flags(dr);
+}
 
 /** @brief load effective address
  *
@@ -313,7 +343,13 @@ void notlc(uint16_t i)
  *   destination and source register operands, and to extract the
  *   second source register or the immediate value encoded in the
  */
-// put your implememtation of lea() here below it documentation
+void lea(uint16_t i)
+{
+  uint16_t dr = DR(i);
+  uint16_t offset = PCOFF9(i);
+
+  reg[dr] = reg[RPC] + offset;
+}
 
 /** @brief store to PC + offset
  *
