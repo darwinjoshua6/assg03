@@ -98,6 +98,9 @@ void ld(uint16_t i);
 void ldi(uint16_t i);
 void ldr(uint16_t i);
 void lea(uint16_t i);
+void st(uint16_t i);
+void sti(uint16_t i);
+void str(uint16_t i);
 
 #ifdef TEST
 } // end extern C for C++ test runner
