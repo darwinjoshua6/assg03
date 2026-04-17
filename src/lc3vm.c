@@ -432,7 +432,8 @@ void str(uint16_t i)
  *   destination and source register operands, and to extract the
  *   second source register or the immediate value encoded in the
  */
-// put your implememtation of jmp() here below its documentation
+void jmp(uint16_t i)
+{ reg[RPC] = reg[SR1(i)]; }
 
 /** @brief conditional branch
  *
@@ -450,8 +451,16 @@ void str(uint16_t i)
  *   destination and source register operands, and to extract the
  *   second source register or the immediate value encoded in the
  */
-// put your implememtation of br() here below its documentation
+void br(uint16_t i)
+{
+  uint16_t cond = DR(i);
+  uint16_t offset = PCOFF9(i);
 
+  if (cond & reg[RCND])
+  {
+    reg[RPC] += offset;
+  }
+}
 /** @brief jump to/from subtroutine
  *
  * This microcode handles both jump into a subroutine and return
@@ -463,7 +472,19 @@ void str(uint16_t i)
  *   destination and source register operands, and to extract the
  *   second source register or the immediate value encoded in the
  */
-// put your implememtation of jsr() here below its documentation
+void jsr(uint16_t i)
+{
+  reg[R7] = reg[RPC];
+
+  if (FL(i))
+  {
+    reg[RPC] = reg[RPC] + PCOFF11(i);
+  }
+  else
+  {
+    reg[RPC] = reg[SR1(i)];
+  }
+}
 
 /** @brief return from interrupt
  *
